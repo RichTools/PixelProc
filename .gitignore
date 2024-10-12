@@ -1,4 +1,6 @@
 .DS_Store
 PixelProc
+./PixelProc
+./RichBuild
 RichBuild
 image.png
