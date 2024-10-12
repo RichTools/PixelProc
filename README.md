@@ -8,6 +8,7 @@ Currently:
 
 In the Future:
 - Resizing
+- Image Enhancement
 - Seam Carving
 - Segmentation
 - and more based on my Image Processing Lectures at Uni
