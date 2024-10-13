@@ -8,7 +8,12 @@ Currently:
 
 In the Future:
 - Resizing
-- Image Enhancement
+- Spatial Domain Enhancement
+  - Remove Noise
+  - Enhance Contrast
+  - Edge Enhancement
+  - Deblur
+- Fourier Transform
 - Seam Carving
 - Segmentation
 - and more based on my Image Processing Lectures at Uni
