@@ -13,6 +13,7 @@ In the Future:
   - Enhance Contrast
   - Edge Enhancement
   - Deblur
+  - Sharpening
 - Fourier Transform
 - Seam Carving
 - Segmentation
