@@ -9,6 +9,7 @@ PIXELS* getPixelData(Image *img);
 PIXELS* rgb2gray(Image* img);
 PIXELS* quantise(Image* img, int levels);
 PIXELS* flip_img(Image* img, bool horizontal);
+PIXELS* nn_interpolate(Image* img, int width, int height);
 
 #endif
 
@@ -103,5 +104,43 @@ PIXELS* flip_img(Image* img, bool horizontal)
   img->data = buffer;
   return pixels;
 }
+
+
+PIXELS* nn_interpolate(Image* img, int width, int height)
+{
+  int channels = 4;
+  PIXELS* buffer = zeros(width, height, channels);
+  PIXELS* pixels = getPixelData(img);
+
+  int old_width = img->width;
+  int old_height = img->height;
+
+  float ratio_x = (float)width/old_width;
+  float ratio_y = (float)height/old_height;
+
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      // Find nearest neighbor in the original image
+      int src_x = (int)round(x / ratio_x);
+      int src_y = (int)round(y / ratio_y);
+
+      // Ensure coordinates are within bounds
+      src_x = src_x < old_width ? src_x : old_width - 1;
+      src_y = src_y < old_height ? src_y : old_height - 1;
+ 
+
+      // Copy pixel data
+      for (int c = 0; c < channels; c++) {
+        buffer[(y * width + x) * channels + c] = pixels[(src_y * old_width + src_x) * channels + c];
+      }
+
+    }
+  }
+  img->data = buffer;
+  img->width = width;
+  img->height = height;
+  return buffer;
+}
+
 
 #endif

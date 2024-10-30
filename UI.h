@@ -20,6 +20,7 @@ Grid grid;
 bool DrawButton(char* text, int y);
 
 void BeginGrid(int columns, int rows, int cellWidth, int cellHeight, int marginX, int marginY, int spacingX, int spacingY);
+void DrawImageEdgePoints(int SCREEN_WIDTH, int SCREEN_HEIGHT, Texture2D texture, int EDGE_SIZE);
 Vector2 getNextGridPosition();
 void EndGrid(); 
 
@@ -89,6 +90,11 @@ Vector2 getNextGridPosition()
 void EndGrid() 
 {
     grid.currentCellIndex = 0;  // Reset grid index for next usage
+}
+
+
+void DrawImageEdgePoints(int SCREEN_WIDTH, int SCREEN_HEIGHT, Texture2D texture, int EDGE_SIZE)
+{
 }
 
 #endif // UI_IMPLEMENTATION
