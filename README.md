@@ -13,7 +13,7 @@ In the Future:
   - [ ] Bicubic 
 - Spatial Domain Enhancement
   - [ ] Remove Noise
-  - [ ] Enhance Contrast
+  - [x] Enhance Contrast
   - [ ] Edge Enhancement
   - [ ] Deblur
   - [ ] Sharpening
