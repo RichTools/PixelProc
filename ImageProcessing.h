@@ -10,6 +10,7 @@ PIXELS* rgb2gray(Image* img);
 PIXELS* quantise(Image* img, int levels);
 PIXELS* flip_img(Image* img, bool horizontal);
 PIXELS* nn_interpolate(Image* img, int width, int height);
+PIXELS* gamma_transform(Image* img, float gamma);
 
 #endif
 
@@ -56,7 +57,6 @@ PIXELS* rgb2gray(Image* img)
 
 PIXELS* quantise(Image* img, int levels)
 {
-  
   int width = img->width;
   int height = img->height;
   int channels = 4;
@@ -81,14 +81,18 @@ PIXELS* flip_img(Image* img, bool horizontal)
   PIXELS* buffer = zeros(width, height, channels);
   PIXELS* pixels = getPixelData(img);
 
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
+  for (int y = 0; y < height; y++)
+  {
+    for (int x = 0; x < width; x++) 
+    {
       int srcIndex = (y * width + x) * channels;
       int destIndex;
-      if (horizontal) {
+      if (horizontal)
+      {
         // Flip horizontally
         destIndex = (y * width + (width - 1 - x)) * channels;
-      } else {
+      } else 
+      {
         // Flip vertically
         destIndex = ((height - 1 - y) * width + x) * channels;
       }
@@ -118,8 +122,10 @@ PIXELS* nn_interpolate(Image* img, int width, int height)
   float ratio_x = (float)width/old_width;
   float ratio_y = (float)height/old_height;
 
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
+  for (int x = 0; x < width; x++)
+  {
+    for (int y = 0; y < height; y++)
+    {
       // Find nearest neighbor in the original image
       int src_x = (int)round(x / ratio_x);
       int src_y = (int)round(y / ratio_y);
@@ -130,7 +136,8 @@ PIXELS* nn_interpolate(Image* img, int width, int height)
  
 
       // Copy pixel data
-      for (int c = 0; c < channels; c++) {
+      for (int c = 0; c < channels; c++)
+      {
         buffer[(y * width + x) * channels + c] = pixels[(src_y * old_width + src_x) * channels + c];
       }
 
@@ -141,6 +148,42 @@ PIXELS* nn_interpolate(Image* img, int width, int height)
   img->height = height;
   return buffer;
 }
+
+PIXELS* gamma_transform(Image* img, float gamma)
+{
+  PIXELS* pixels = getPixelData(img);
+  int width = img->width;
+  int height = img->height;
+  int channels = 4;
+  
+
+  for (int x = 0; x < width; x++)
+  {
+    for (int y = 0; y < height; y++)
+    {
+      int index = (y * width + x) * channels;
+
+      // normalise intensities
+      float norm_pixel_r = pixels[index + 0] / 255.0f;
+      float norm_pixel_g = pixels[index + 1] / 255.0f;
+      float norm_pixel_b = pixels[index + 2] / 255.0f;
+
+      // apply gamma correction 
+      norm_pixel_r = powf(norm_pixel_r, gamma);
+      norm_pixel_g = powf(norm_pixel_g, gamma);
+      norm_pixel_b = powf(norm_pixel_b, gamma);
+
+      // scale back to 0-255 
+      pixels[index + 0] = (PIXELS)(norm_pixel_r * 255.0f); 
+      pixels[index + 1] = (PIXELS)(norm_pixel_g * 255.0f);
+      pixels[index + 2] = (PIXELS)(norm_pixel_b * 255.0f);
+    }
+  }
+  return pixels;
+}
+
+
+
 
 
 #endif

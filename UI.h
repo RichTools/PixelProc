@@ -8,7 +8,7 @@ typedef struct {
     int rows;
     int cellWidth;
     int cellHeight;
-    int marginX;
+int marginX;
     int marginY;
     int spacingX;
     int spacingY;
@@ -27,6 +27,8 @@ void EndGrid();
 #endif // _UI_H 
 
 #ifdef UI_IMPLEMENTATION
+
+const int EDGE_SIZE = 5;
 
 bool DrawButton(char* text, int y)
 {
@@ -96,6 +98,38 @@ void EndGrid()
 void DrawImageEdgePoints(int SCREEN_WIDTH, int SCREEN_HEIGHT, Texture2D texture, int EDGE_SIZE)
 {
 }
+
+Vector2 GetScaledDimensions(Texture2D texture, Rectangle bounds) {
+    float scale;
+    Vector2 newDimensions = {0};
+    
+    // Calculate scale ratios for both width and height
+    float scaleX = bounds.width / texture.width;
+    float scaleY = bounds.height / texture.height;
+    
+    // Use the smaller scale to ensure texture fits within bounds
+    scale = (scaleX < scaleY) ? scaleX : scaleY;
+    
+    // Calculate new dimensions maintaining aspect ratio
+    newDimensions.x = texture.width * scale;
+    newDimensions.y = texture.height * scale;
+    
+    return newDimensions;
+}
+
+void DrawTextureInBox(Texture2D texture, Rectangle bounds, Color tint) {
+    Vector2 dimensions = GetScaledDimensions(texture, bounds);
+    
+    // Calculate position to center the texture in the bounds
+    float x = bounds.x + (bounds.width - dimensions.x) * 0.5f;
+    float y = bounds.y + (bounds.height - dimensions.y) * 0.5f;
+    
+    // Draw the scaled texture
+    Rectangle source = (Rectangle){ 0, 0, texture.width, texture.height };
+    Rectangle dest = (Rectangle){ x, y, dimensions.x, dimensions.y };
+    DrawTexturePro(texture, source, dest, (Vector2){0, 0}, 0.0f, tint);
+}
+
 
 #endif // UI_IMPLEMENTATION
 

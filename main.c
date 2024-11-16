@@ -23,8 +23,6 @@ int main()
 
   Image img = LoadImage("./images/image.png");
   Texture2D texture = LoadTextureFromImage(img);
-
-
   
   SetTargetFPS(60);
 
@@ -63,6 +61,24 @@ int main()
         flip_img(&img, false);
         texture = LoadTextureFromImage(img);
       }
+      
+      float gamma_lighten = 1.0f;
+      pos = getNextGridPosition();
+      if (DrawButton("Lighten", pos.y))
+      {
+        gamma_lighten -= 0.1;
+        gamma_transform(&img, gamma_lighten);
+        texture = LoadTextureFromImage(img);
+      }
+      
+      float gamma_darken = 1.0f;
+      pos = getNextGridPosition();
+      if (DrawButton("Darken", pos.y))
+      {
+        gamma_darken += 0.1f;
+        gamma_transform(&img, gamma_darken);
+        texture = LoadTextureFromImage(img);
+      }
 
 
       pos = getNextGridPosition();
@@ -72,27 +88,37 @@ int main()
       }
 
       // Draw Image
-      DrawTexture(texture, SCREEN_WIDTH/2 - texture.width/2, SCREEN_HEIGHT/2 - texture.height/2, WHITE);
+      Rectangle bounds = (Rectangle){
+          SCREEN_WIDTH - (SCREEN_WIDTH - 500),  // x position
+          10, // y position
+          SCREEN_WIDTH - 500,                   // width of box
+          SCREEN_HEIGHT - 200                    // height of box
+      };
+
+      // Draw the texture maintaining aspect ratio
+      DrawTextureInBox(texture, bounds, WHITE);
+
+      // draw the bounds for debugging
+      //DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, RED);
+      
+
       Vector2 mousePos = GetMousePosition();
 
       const int EDGE_SIZE = 5;
-      Rectangle BTMRIGHT = {SCREEN_WIDTH/2 + texture.width/2, 
-                           SCREEN_HEIGHT/2 + texture.height/2,
-                           EDGE_SIZE, EDGE_SIZE};
-      Rectangle TOPRIGHT = {SCREEN_WIDTH/2 + texture.width/2,
-                            SCREEN_HEIGHT/2 - texture.height/2 - EDGE_SIZE,
-                            EDGE_SIZE, EDGE_SIZE};
-      Rectangle TOPLEFT = {SCREEN_WIDTH/2 - texture.width/2 - EDGE_SIZE, 
-                           SCREEN_HEIGHT/2 - texture.height/2 - EDGE_SIZE, 
-                           EDGE_SIZE, EDGE_SIZE};
-      Rectangle BTMLEFT = {SCREEN_WIDTH/2 - texture.width/2 - EDGE_SIZE,
-                           SCREEN_HEIGHT/2 + texture.height/2, 
-                           EDGE_SIZE, EDGE_SIZE};
 
-      Rectangle RIGHTMID = {SCREEN_WIDTH/2 + texture.width/2, SCREEN_HEIGHT/2, EDGE_SIZE, EDGE_SIZE};
-      Rectangle TOPMID = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + texture.height/2, EDGE_SIZE, EDGE_SIZE};
-      Rectangle BTMMID = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - texture.height/2 - EDGE_SIZE, EDGE_SIZE, EDGE_SIZE};
-      Rectangle LEFTMID = {SCREEN_WIDTH/2 - texture.width/2 - EDGE_SIZE, SCREEN_HEIGHT/2, EDGE_SIZE, EDGE_SIZE};
+      Vector2 dim = GetScaledDimensions(texture, bounds);
+      float x_texture = bounds.x + (bounds.width - dim.x) * 0.5f;
+      float y_texture = bounds.y + (bounds.height - dim.y) * 0.5f;
+    
+
+      Rectangle BTMRIGHT = {x_texture + dim.x - EDGE_SIZE, y_texture + dim.y - EDGE_SIZE, EDGE_SIZE, EDGE_SIZE};
+      Rectangle TOPRIGHT = {x_texture + dim.x - EDGE_SIZE, y_texture, EDGE_SIZE, EDGE_SIZE};
+      Rectangle TOPLEFT = {x_texture, y_texture, EDGE_SIZE, EDGE_SIZE};
+      Rectangle BTMLEFT = {x_texture, y_texture + dim.y - EDGE_SIZE, EDGE_SIZE, EDGE_SIZE};
+      Rectangle RIGHTMID = {x_texture + dim.x - EDGE_SIZE, y_texture + dim.y/2 , EDGE_SIZE, EDGE_SIZE};
+      Rectangle TOPMID = {x_texture + dim.x / 2,  y_texture, EDGE_SIZE, EDGE_SIZE};
+      Rectangle BTMMID = {x_texture + dim.x / 2, y_texture + dim.y - EDGE_SIZE, EDGE_SIZE, EDGE_SIZE};
+      Rectangle LEFTMID = {x_texture, y_texture + dim.y / 2, EDGE_SIZE, EDGE_SIZE};
                   
       // Draw Corners
       DrawRectangleRec(BTMRIGHT, WHITE);
@@ -118,18 +144,53 @@ int main()
                 edgeRect = &LEFTMID;
                 offset.x = mousePos.x - LEFTMID.x;
           }
+          else if (CheckCollisionPointRec(mousePos, TOPMID)) {
+                dragging = true;
+                edgeRect = &TOPMID;
+                offset.y = mousePos.y - TOPMID.y;
+          }
+          else if (CheckCollisionPointRec(mousePos, BTMMID)) {
+                dragging = true;
+                edgeRect = &BTMMID;
+                offset.y = mousePos.y - BTMMID.y;
+          }
+          else if (CheckCollisionPointRec(mousePos, TOPRIGHT)) {
+                dragging = true;
+                edgeRect = &TOPRIGHT;
+                offset.x = mousePos.x - TOPRIGHT.x;
+                offset.y = mousePos.y - TOPRIGHT.y;
+          }
+          else if (CheckCollisionPointRec(mousePos, TOPLEFT)) {
+                dragging = true;
+                edgeRect = &TOPLEFT;
+                offset.x = mousePos.x - TOPLEFT.x;
+                offset.y = mousePos.y - TOPLEFT.y;
+          }
+          else if (CheckCollisionPointRec(mousePos, BTMLEFT)) {
+                dragging = true;
+                edgeRect = &BTMLEFT;
+                offset.x = mousePos.x - BTMLEFT.x;
+                offset.y = mousePos.y - BTMLEFT.y;
+          }
+          else if (CheckCollisionPointRec(mousePos, BTMRIGHT)) {
+                dragging = true;
+                edgeRect = &BTMRIGHT;
+                offset.x = mousePos.x - BTMRIGHT.x;
+                offset.y = mousePos.y - BTMRIGHT.y;
+          }
+       }
+
+      // Stop dragging if the mouse button is released
+      if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+          dragging = false;
       }
 
-        // Stop dragging if the mouse button is released
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-            dragging = false;
-        }
-
-        // Update rectangle position if dragging
-        if (dragging) {
-            edgeRect->x = mousePos.x;
-            nn_interpolate(&img, texture.width + offset.x, texture.height);
-            texture = LoadTextureFromImage(img);
+      // Update rectangle position if dragging
+      if (dragging) {
+          edgeRect->x = mousePos.x;
+          edgeRect->y = mousePos.y;
+          nn_interpolate(&img, texture.width + offset.x, texture.height + offset.y);
+          texture = LoadTextureFromImage(img);
         }
 
       EndGrid();
